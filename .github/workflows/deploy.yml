@@ -81,7 +81,6 @@ jobs:
           fi
           
           echo "Nova versão: $NEW_VERSION"
-          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
           echo "::set-output name=new_version::$NEW_VERSION"
       
       - name: Set up Docker Buildx
