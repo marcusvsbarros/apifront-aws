@@ -107,6 +107,30 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Verificar e criar repositório no Docker Hub (se necessário)
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          REPO_NAME=${{ github.repository }}  # Nome do repositório GitHub
+          REPO_NAME=${REPO_NAME//\//-}  # Substitui / por - para usar no Docker Hub
+
+          # Verificar se o repositório já existe no Docker Hub
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -u $DOCKERHUB_USERNAME:$DOCKERHUB_TOKEN \
+            "https://hub.docker.com/v2/repositories/$DOCKERHUB_USERNAME/$REPO_NAME/")
+
+          # Se o repositório não existe (status 404), cria um novo
+          if [ "$RESPONSE" -eq 404 ]; then
+            echo "Repositório não existe. Criando repositório no Docker Hub..."
+            curl -s -X POST -u $DOCKERHUB_USERNAME:$DOCKERHUB_TOKEN \
+              -H "Content-Type: application/json" \
+              -d '{"name": "'$REPO_NAME'", "is_private": true}' \
+              "https://hub.docker.com/v2/repositories/$DOCKERHUB_USERNAME/"
+            echo "Repositório $REPO_NAME criado com sucesso!"
+          else
+            echo "Repositório $REPO_NAME já existe no Docker Hub."
+          fi
+
       - name: Criar imagem docker
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.repository }}:${{ env.new_version }} .
