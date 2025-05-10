@@ -156,6 +156,16 @@ jobs:
     steps:
       - name: Definir o nome do repositório
         run: echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_ENV
+
+      - name: Verificar versão antes de rodar o Docker
+        run: |
+          echo "Verificando a versão da imagem..."
+          if [ -z "${{ env.new_version }}" ]; then
+            echo "Erro: A variável 'new_version' está vazia!"
+            exit 1
+          else
+            echo "Versão da imagem: ${{ env.new_version }}"
+          fi
       
       - name: Verificar variáveis antes de rodar o Docker
         run: |
@@ -164,7 +174,7 @@ jobs:
       
       - name: Verificar nome da imagem Docker
         run: |
-          IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/$REPO_NAME:${{ env.new_version }}"
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ env.new_version }}"
           echo "Imagem Docker: $IMAGE_NAME"
           docker run -d -p 80:80 --name $REPO_NAME $IMAGE_NAME
             
@@ -191,7 +201,7 @@ jobs:
             fi
 
             # Baixar imagem atualizada do Docker Hub
-            docker pull ${{ secrets.DOCKER_USERNAME }}/$REPO_NAME:${{ env.new_version }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ env.new_version }}
 
             # Iniciar o novo container
-            docker run -d -p 80:80 --name $REPO_NAME ${{ secrets.DOCKER_USERNAME }}/$REPO_NAME:${{ env.new_version }}
+            docker run -d -p 80:80 --name $REPO_NAME ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ env.new_version }}
