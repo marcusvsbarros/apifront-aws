@@ -82,6 +82,7 @@ jobs:
           
           echo "Nova versão: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=new_version::$NEW_VERSION"
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -160,21 +161,21 @@ jobs:
       - name: Verificar versão antes de rodar o Docker
         run: |
           echo "Verificando a versão da imagem..."
-          if [ -z "${{ env.new_version }}" ]; then
+          if [ -z "${{ needs.build.outputs.new_version }}" ]; then
             echo "Erro: A variável 'new_version' está vazia!"
             exit 1
           else
-            echo "Versão da imagem: ${{ env.new_version }}"
+            echo "Versão da imagem: ${{ needs.build.outputs.new_version }}"
           fi
-      
+
       - name: Verificar variáveis antes de rodar o Docker
         run: |
           echo "REPO_NAME: $REPO_NAME"
-          echo "new_version: ${{ env.new_version }}"
-      
+          echo "new_version: ${{ needs.build.outputs.new_version }}"
+
       - name: Verificar nome da imagem Docker
         run: |
-          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ env.new_version }}"
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
           echo "Imagem Docker: $IMAGE_NAME"
           docker run -d -p 80:80 --name $REPO_NAME $IMAGE_NAME
             
