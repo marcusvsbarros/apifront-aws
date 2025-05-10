@@ -14,8 +14,8 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Instalar dependências
-        run: npm install --force
+      #- name: Instalar dependências
+      #  run: npm install --force
 
       - name: Instalar semver
         run: npm install -g semver
@@ -161,6 +161,13 @@ jobs:
         run: |
           echo "REPO_NAME: $REPO_NAME"
           echo "new_version: ${{ env.new_version }}"
+      
+      - name: Verificar nome da imagem Docker
+        run: |
+          IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/$REPO_NAME:${{ env.new_version }}"
+          echo "Imagem Docker: $IMAGE_NAME"
+          docker run -d -p 80:80 --name $REPO_NAME $IMAGE_NAME
+            
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
