@@ -202,7 +202,7 @@ jobs:
             fi
 
             # Baixar imagem atualizada do Docker Hub
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ env.new_version }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
 
             # Iniciar o novo container
-            docker run -d -p 80:80 --name $REPO_NAME ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ env.new_version }}
+            docker run -d -p 80:80 --name $REPO_NAME ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
