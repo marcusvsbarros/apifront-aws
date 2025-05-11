@@ -210,6 +210,10 @@ jobs:
             sudo yum update -y || sudo apt update -y
             sudo service docker start || sudo systemctl start docker
 
+            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
+
+            echo "Imagem a ser utilizada: $IMAGE"
+
             echo "Buscar containers $REPO_NAME"
             # Verificar e parar/ remover container antigo se existir
             CONTAINER_ID=$(docker ps -q --filter "name=$REPO_NAME")
@@ -221,8 +225,8 @@ jobs:
               echo "Nenhum container existente encontrado para $REPO_NAME."
             fi
 
-            # Baixar imagem atualizada do Docker Hub
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}
+            # Baixar imagem do Docker Hub
+            docker pull $IMAGE
 
-            # Iniciar o novo container
-            docker run -d -p 80:80 --name $REPO_NAME ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}
+            # Rodar novo container
+            docker run -d -p 80:80 --name $REPO_NAME $IMAGE
