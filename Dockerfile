@@ -1,30 +1,31 @@
-# Etapa 1: build da aplicação React
+# Usando a imagem oficial do Node.js
 FROM node:18-alpine as build
 
-# Diretório de trabalho
+# Diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copia arquivos de dependências e instala
+# Copia os arquivos de dependências
 COPY package*.json ./
+
+# Instala as dependências
 RUN npm install --force
 
-# Copia o restante dos arquivos e constrói a aplicação
+# Copia o restante dos arquivos
 COPY . .
+
+# Gera a build da aplicação React
 RUN npm run build
 
-# Etapa 2: servidor Nginx para servir os arquivos estáticos
+# Usando a imagem oficial do Nginx
 FROM nginx:stable-alpine
 
-# Remove o conteúdo padrão do Nginx
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copia os arquivos da build React para o Nginx
+# Copia os arquivos da build do React para o diretório padrão do Nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copia o arquivo de configuração customizado do Nginx
+# Copia a configuração personalizada do Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expondo a porta 80 para acesso externo
+# Expondo a porta 80
 EXPOSE 80
 
 # Inicia o Nginx
