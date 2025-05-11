@@ -178,15 +178,6 @@ jobs:
           IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
           echo "Imagem completa: $IMAGE"
 
-      - name: Executar docker run com validação
-        run: |
-          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
-          if [[ -z "$IMAGE" || "$IMAGE" == *:* && "$IMAGE" == *: ]]; then
-            echo "Imagem inválida: $IMAGE"
-            exit 1
-          fi
-          docker run -d -p 80:80 --name $REPO_NAME "$IMAGE"
-
       - name: Debug de variáveis
         run: |
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}"
