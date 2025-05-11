@@ -205,23 +205,19 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-              script: |
-                sudo yum update -y || sudo apt update -y
-                sudo service docker start || sudo systemctl start docker
-
-                IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$(echo ${{ github.repository }} | cut -d'/' -f2):${{ needs.build.outputs.new_version }}"
-                REPO_NAME="$(echo ${{ github.repository }} | cut -d'/' -f2)"
-
-                echo "Imagem a ser utilizada: $IMAGE"
-
-                CONTAINER_ID=$(docker ps -q --filter "name=$REPO_NAME")
-                if [ ! -z "$CONTAINER_ID" ]; then
-                  echo "Parando e removendo container antigo..."
-                  docker stop $CONTAINER_ID
-                  docker rm $CONTAINER_ID
-                else
-                  echo "Nenhum container existente encontrado para $REPO_NAME."
-                fi
-
-                docker pull $IMAGE
-                docker run -d -p 80:80 --name $REPO_NAME $IMAGE
+          script: |
+            sudo yum update -y || sudo apt update -y
+            sudo service docker start || sudo systemctl start docke
+            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$(echo ${{ github.repository }} | cut -d'/' -f2):${{ needs.build.outputs.new_version }}"
+            REPO_NAME="$(echo ${{ github.repository }} | cut -d'/' -f2)
+            echo "Imagem a ser utilizada: $IMAGE
+            CONTAINER_ID=$(docker ps -q --filter "name=$REPO_NAME")
+            if [ ! -z "$CONTAINER_ID" ]; then
+              echo "Parando e removendo container antigo..."
+              docker stop $CONTAINER_ID
+              docker rm $CONTAINER_ID
+            else
+              echo "Nenhum container existente encontrado para $REPO_NAME."
+            f
+            docker pull $IMAGE
+            docker run -d -p 80:80 --name $REPO_NAME $IMAGE
