@@ -10,6 +10,7 @@ jobs:
 
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
+      repo_name: ${{ steps.define_repo_name.outputs.repo_name }}
 
     steps:
       - name: Checkout code
@@ -163,7 +164,11 @@ jobs:
 
     steps:
       - name: Definir o nome do repositório
-        run: echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_ENV
+        id: define_repo_name
+        run: |
+          REPO_NAME="${{ github.repository }}"
+          REPO_NAME="${REPO_NAME#*/}"
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
 
       - name: Verificar variáveis finais
         run: |
@@ -206,21 +211,15 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            VERSION="${{ needs.build-and-push.outputs.new_version }}"
+            REPO_NAME="${{ needs.build.outputs.repo_name }}"
+            VERSION="${{ needs.build.outputs.new_version }}"
             IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$VERSION"
 
-            echo "REPO_NAME: $REPO_NAME"
-            echo "VERSION: $VERSION"
-            echo "Deploying image: $IMAGE"
+            echo "Deploying $IMAGE..."
 
             sudo yum update -y || sudo apt update -y
             sudo systemctl start docker || sudo service docker start
 
-            echo "Parando container anterior (se houver)..."
             docker rm -f $REPO_NAME || true
-
-            echo "Baixando imagem mais recente..."
             docker pull $IMAGE
-
-            echo "Subindo novo container..."
             docker run -d -p 80:80 --name $REPO_NAME $IMAGE
