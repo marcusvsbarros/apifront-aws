@@ -103,6 +103,10 @@ jobs:
           REPO_NAME="${REPO_NAME#*/}"
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV  # Definir a variável como global para uso posterior
           echo "Repositório: $REPO_NAME"
+
+      - name: Tag calculada
+        run: |
+          echo "new_version: ${{ needs.build.outputs.new_version }}"
       
       - name: Verificar e criar repositório no Docker Hub (se necessário)
         env:
