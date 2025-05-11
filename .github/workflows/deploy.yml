@@ -200,11 +200,25 @@ jobs:
             VERSION="${{ needs.build.outputs.new_version }}"
             IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$VERSION"
 
-            echo "Deploying $IMAGE..."
+            echo "🔄 Iniciando deploy da imagem: $IMAGE"
 
+            # Garantir que o Docker esteja disponível
             sudo yum update -y || sudo apt update -y
             sudo systemctl start docker || sudo service docker start
 
-            docker rm -f $REPO_NAME || true
+            # Verificar container existente
+            CONTAINER_ID=$(docker ps -q --filter "name=$REPO_NAME")
+            if [ -n "$CONTAINER_ID" ]; then
+              echo "⚙️ Container atual em execução:"
+              docker inspect --format='{{.Config.Image}}' $CONTAINER_ID
+              echo "🛑 Parando e removendo container atual..."
+              docker rm -f $REPO_NAME || true
+            else
+              echo "ℹ️ Nenhum container atual encontrado com nome: $REPO_NAME"
+            fi
+
+            echo "⬇️ Baixando nova imagem..."
             docker pull $IMAGE
+
+            echo "🚀 Subindo novo container..."
             docker run -d -p 80:80 --name $REPO_NAME $IMAGE
