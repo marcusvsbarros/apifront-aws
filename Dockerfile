@@ -1,20 +1,31 @@
-# Imagem base do Node.js
-FROM node:18-alpine
+# Etapa 1: build da aplicação React
+FROM node:18-alpine as build
 
-# Diretório de trabalho dentro do container
+# Diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos de dependências
+# Copia arquivos de dependências e instala
 COPY package*.json ./
-
-# Instala as dependências
 RUN npm install --force
 
-# Copia o restante dos arquivos
+# Copia o restante dos arquivos e constrói a aplicação
 COPY . .
+RUN npm run build
 
-# Expõe a porta padrão do React (3000)
-EXPOSE 3000
+# Etapa 2: servidor Nginx para servir os arquivos estáticos
+FROM nginx:stable-alpine
 
-# Comando para iniciar a aplicação em modo dev
-CMD ["npm", "start"]
+# Remove o conteúdo padrão do Nginx
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copia os arquivos da build React para o Nginx
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Copia o arquivo de configuração customizado do Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expondo a porta 80 para acesso externo
+EXPOSE 80
+
+# Inicia o Nginx
+CMD ["nginx", "-g", "daemon off;"]
