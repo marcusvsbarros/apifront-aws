@@ -206,10 +206,11 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            REPO_NAME="${{ needs.build-and-push.outputs.repo_name }}"
             VERSION="${{ needs.build-and-push.outputs.new_version }}"
             IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$VERSION"
 
+            echo "REPO_NAME: $REPO_NAME"
+            echo "VERSION: $VERSION"
             echo "Deploying image: $IMAGE"
 
             sudo yum update -y || sudo apt update -y
