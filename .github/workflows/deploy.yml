@@ -106,7 +106,8 @@ jobs:
           echo "Repositório: $REPO_NAME"
 
       - name: Tag calculada
-        run: echo "Nova versão calculada: ${{ needs.build.outputs.new_version }}"
+        run: | 
+          echo "Nova versão calculada: ${{ needs.build.outputs.new_version }}"
       
       - name: Verificar e criar repositório no Docker Hub (se necessário)
         env:
