@@ -165,26 +165,22 @@ jobs:
       - name: Definir o nome do repositório
         run: echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_ENV
 
-      - name: Verificar versão antes de rodar o Docker
+      - name: Verificar variáveis finais
         run: |
-          echo "Verificando a versão da imagem..."
-          if [ -z "${{ needs.build.outputs.new_version }}" ]; then
-            echo "Erro: A variável 'new_version' está vazia!"
-            exit 1
-          else
-            echo "Versão da imagem: ${{ needs.build.outputs.new_version }}"
-          fi
-
-      - name: Verificar variáveis antes de rodar o Docker
-        run: |
+          echo "DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}"
           echo "REPO_NAME: $REPO_NAME"
-          echo "new_version: ${{ needs.build.outputs.new_version }}"
+          echo "NEW_VERSION: ${{ needs.build.outputs.new_version }}"
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
+          echo "Imagem completa: $IMAGE"
 
-      - name: Verificar nome da imagem Docker
+      - name: Executar docker run com validação
         run: |
-          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
-          echo "Imagem Docker: $IMAGE_NAME"
-          docker run -d -p 80:80 --name $REPO_NAME $IMAGE_NAME
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ needs.build.outputs.new_version }}"
+          if [[ -z "$IMAGE" || "$IMAGE" == *:* && "$IMAGE" == *: ]]; then
+            echo "Imagem inválida: $IMAGE"
+            exit 1
+          fi
+          docker run -d -p 80:80 --name $REPO_NAME "$IMAGE"
             
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.5
