@@ -139,7 +139,7 @@ jobs:
           fi
 
       - name: Criar imagem docker
-        if: steps.versao.outputs.should_deploy == 'true'
+        if: steps.versao.outputs.should_deploy == true
         run: |
           echo "Iniciando build da imagem Docker para o repositório $REPO_NAME"
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$new_version .
