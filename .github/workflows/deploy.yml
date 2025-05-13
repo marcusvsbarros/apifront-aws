@@ -99,9 +99,6 @@ jobs:
             echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
             echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           fi
-
-          echo "Variável deploy: ${{ steps.versao.outputs.should_deploy }}"
-          echo "should_deploy=$should_deploy"
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -120,6 +117,8 @@ jobs:
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV 
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
           echo "Repositório: $REPO_NAME"
+          echo "Variável deploy: ${{ steps.versao.outputs.should_deploy }}"
+          echo "should_deploy=$should_deploy"
       
       - name: Verificar e criar repositório no Docker Hub (se necessário)
         env:
