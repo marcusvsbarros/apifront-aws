@@ -117,8 +117,6 @@ jobs:
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV 
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
           echo "Repositório: $REPO_NAME"
-          echo "Variável deploy: ${{ steps.version.outputs.should_deploy }}"
-          echo "should_deploy=$should_deploy"
       
       - name: Verificar e criar repositório no Docker Hub (se necessário)
         env:
@@ -141,7 +139,7 @@ jobs:
           fi
 
       - name: Criar imagem docker
-        if: steps.version.outputs.should_deploy == true
+        if: steps.version.outputs.should_deploy == 'true'
         run: |
           echo "Iniciando build da imagem Docker para o repositório $REPO_NAME"
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$new_version .
