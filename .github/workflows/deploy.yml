@@ -88,7 +88,7 @@ jobs:
 
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-          if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
+          if [ "$CURRENT_VERSION" == "$NEW_VERSION" ]; then
             echo "should_deploy=false" >> $GITHUB_OUTPUT
             echo "Manter versão atual: $CURRENT_VERSION"
             echo "new_version=$CURRENT_VERSION" >> $GITHUB_ENV
