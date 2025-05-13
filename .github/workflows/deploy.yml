@@ -99,6 +99,8 @@ jobs:
             echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
             echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           fi
+
+          echo "Variável deploy: ${{ steps.versao.outputs.should_deploy }}"
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
