@@ -243,5 +243,5 @@ jobs:
             echo "⬇️ Baixando nova imagem..."
             docker pull $IMAGE
 
-            echo "🚀 Subindo novo container..."
+            echo "🚀 Subindo novo container... $REPO_NAME $IMAGE"
             docker run -d -p 80:80 --name $REPO_NAME $IMAGE
