@@ -174,6 +174,16 @@ jobs:
     needs: build  # Garante que o job 'build' será executado antes
 
     steps:
+      - name: Definir o nome do repositório (caso não exista)
+        if: "!steps.versao.outputs.repo_name"
+        id: define_repo_name
+        run: |
+          REPO_NAME="${{ github.repository }}"
+          REPO_NAME="${REPO_NAME#*/}"
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV 
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "Repositório: $REPO_NAME"
+
       - name: Verificar variáveis finais
         run: |
           echo "DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}"
@@ -226,6 +236,9 @@ jobs:
             else
               echo "ℹ️ Nenhum container atual encontrado com nome: $REPO_NAME"
             fi
+
+            echo "🧹 Removendo imagem local antiga, se existir..."
+            docker rmi -f "$IMAGE" || echo "ℹ️ Nenhuma imagem antiga encontrada com a tag: $IMAGE"
 
             echo "⬇️ Baixando nova imagem..."
             docker pull $IMAGE
