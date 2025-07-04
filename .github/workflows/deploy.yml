@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      new_version: ${{ steps.version.outputs.new_version }}
+      NEW_VERSION: ${{ steps.version.outputs.new_version }}
       repo_name: ${{ steps.define_repo_name.outputs.repo_name }}
 
     steps:
