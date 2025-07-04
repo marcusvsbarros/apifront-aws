@@ -58,7 +58,8 @@ jobs:
           MINOR=0
           PATCH=0
           
-          for COMMIT in "$COMMITS"; do
+          # É necessário iterar corretamente, usar um loop diferente para bash
+          while IFS= read -r COMMIT; do
             if [[ "$COMMIT" == *"BREAKING CHANGE"* ]]; then
               MAJOR=1
             elif [[ "$COMMIT" == *"feat"* ]]; then
@@ -66,7 +67,7 @@ jobs:
             elif [[ "$COMMIT" == *"fix"* ]]; then
               PATCH=1
             fi
-          done
+          done <<< "$COMMITS"
           
           CURRENT_VERSION=${LAST_TAG#v}
           NEW_VERSION=$CURRENT_VERSION
@@ -145,30 +146,33 @@ jobs:
         if: steps.version.outputs.should_deploy == 'true'
         run: |
           echo "Iniciando build da imagem Docker para o repositório $REPO_NAME"
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$new_version .
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$new_version ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:latest
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ steps.version.outputs.new_version }} .
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ steps.version.outputs.new_version }} ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:latest
 
       - name: Efetuar push da imagem
         if: steps.version.outputs.should_deploy == 'true'
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:$new_version
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:${{ steps.version.outputs.new_version }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME:latest
 
       - name: Atualizar versão no package.json
         if: steps.version.outputs.should_deploy == 'true'
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
         run: |
-          npm version $new_version --no-git-tag-version
-          
+          npm version $NEW_VERSION --no-git-tag-version
+
       - name: Commit e push
         if: steps.version.outputs.should_deploy == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           git add package.json
-          git commit -m "chore(release): version $new_version"
-          git tag v$new_version
+          git commit -m "chore(release): version $NEW_VERSION"
+          git tag v$NEW_VERSION
           git push origin main --tags
 
   deploy:
